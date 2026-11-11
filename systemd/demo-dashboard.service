@@ -1,0 +1,35 @@
+# Managed by linux-self-healing-lab (installer/lab_install.py). Do not edit by hand.
+[Unit]
+Description=Linux Self-Healing Lab - dashboard (http://127.0.0.1:8081)
+After=demo-monitor.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/self-healing-lab/dashboard/dashboard.py --data-dir /var/lib/self-healing-lab --host 127.0.0.1 --port 8081
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=5
+
+# Own unprivileged account. It reads the monitor's files through group
+# membership (directory 2750 shlab-mon:shlab-dash, files 0640) and cannot
+# write them: ProtectSystem=strict with no ReadWritePaths makes the whole
+# filesystem read-only for this service.
+User=shlab-dash
+Group=shlab-dash
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+# Network: the app binds 127.0.0.1 only; in addition, the kernel (cgroup BPF
+# filter) drops traffic to/from any non-loopback address for this service.
+IPAddressDeny=any
+IPAddressAllow=localhost
+RestrictAddressFamilies=AF_INET AF_INET6
+
+MemoryMax=64M
+CPUQuota=25%
+
+[Install]
+WantedBy=multi-user.target

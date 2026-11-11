@@ -1,0 +1,34 @@
+# Managed by linux-self-healing-lab (installer/lab_install.py). Do not edit by hand.
+[Unit]
+Description=Linux Self-Healing Lab - monitor
+After=demo-service.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/self-healing-lab/monitor/monitor.py --data-dir /var/lib/self-healing-lab --app-log /var/log/self-healing-lab/demo.log
+Environment=PYTHONUNBUFFERED=1
+
+# The monitor is supervised too: if it crashes, systemd restarts it.
+Restart=on-failure
+RestartSec=5
+
+# Dedicated unprivileged account, created and tracked by the installer.
+# Deliberately NOT in the systemd-journal group (that would allow reading
+# the whole system journal). Logs come from the demo's own log file.
+User=shlab-mon
+Group=shlab-mon
+# Data directory (created by the installer): 2750 shlab-mon:shlab-dash.
+# Files are 0640: the monitor writes, only the dashboard's group can read.
+# (Not StateDirectory=: systemd would reset the directory's group to
+# shlab-mon on every start and lock the dashboard out.)
+ReadWritePaths=/var/lib/self-healing-lab
+UMask=0027
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+MemoryMax=64M
+
+[Install]
+WantedBy=multi-user.target

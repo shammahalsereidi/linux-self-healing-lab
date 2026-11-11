@@ -1,0 +1,136 @@
+/* Self-Healing Lab dashboard. Colours are roles, defined once per mode. */
+.viz-root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface-1: #fcfcfb;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --series-1: #2a78d6;
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --on-status: #ffffff;
+  --on-warning: #0b0b0b;
+}
+@media (prefers-color-scheme: dark) {
+  .viz-root {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface-1: #1a1a19;
+    --text-primary: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --series-1: #3987e5;
+  }
+}
+
+html, body { margin: 0; }
+body { background: #f9f9f7; }
+@media (prefers-color-scheme: dark) { body { background: #0d0d0d; } }
+
+.viz-root {
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  min-height: 100vh;
+}
+main { max-width: 1120px; margin: 0 auto; padding: 24px 20px 40px; transition: opacity .2s; }
+main.refreshing { opacity: .6; }
+h1 { font-size: 22px; margin: 0 0 2px; font-weight: 600; }
+h2 { font-size: 17px; margin: 0 0 8px; font-weight: 600; }
+h3 { font-size: 14px; margin: 0; font-weight: 600; color: var(--text-secondary); }
+code { font-size: 13px; }
+.muted, .tick, .card-note, .cell-note, .empty { color: var(--text-muted); }
+.card-note { font-size: 13px; margin: 2px 0 10px; }
+.cell-note { font-size: 12px; margin-top: 2px; }
+.empty { font-size: 14px; }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+             margin-bottom: 16px; flex-wrap: wrap; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+        padding: 16px; margin: 0 0 16px; }
+
+/* status badges: icon + label, colour is never the only signal */
+.badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px;
+         padding: 2px 10px 2px 8px; font-size: 13px; font-weight: 600; white-space: nowrap;
+         color: var(--on-status); }
+.badge-large { font-size: 16px; padding: 6px 14px 6px 12px; }
+.badge-icon { font-weight: 700; }
+.badge-good { background: var(--status-good); }
+.badge-warning { background: var(--status-warning); color: var(--on-warning); }
+.badge-serious { background: var(--status-serious); color: var(--on-warning); }
+.badge-critical { background: var(--status-critical); }
+.badge-neutral { background: var(--axis); color: var(--text-primary); }
+
+.alert { background: var(--surface-1); border: 1px solid var(--status-serious);
+         border-left-width: 4px; border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+.alert[hidden] { display: none; }
+
+/* stat tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;
+         margin-bottom: 16px; }
+.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+        padding: 12px 14px; }
+.tile-label { font-size: 13px; color: var(--text-secondary); }
+.tile-value { font-size: 24px; font-weight: 600; }
+.tile-sub { font-size: 12px; color: var(--text-muted); overflow-wrap: anywhere; }
+
+/* charts */
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+@media (max-width: 480px) { .charts { grid-template-columns: 1fr; } }
+.chart-wrap { position: relative; }
+svg.chart { display: block; width: 100%; height: auto; overflow: visible; }
+svg.chart:focus { outline: 2px solid var(--series-1); outline-offset: 4px; border-radius: 4px; }
+.grid { stroke: var(--grid); stroke-width: 1; }
+.axis { stroke: var(--axis); stroke-width: 1; }
+.tick { font-size: 11px; fill: var(--text-muted); font-variant-numeric: tabular-nums; }
+.line { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-linejoin: round;
+        stroke-linecap: round; }
+.area { fill: var(--series-1); fill-opacity: .10; stroke: none; }
+.point { fill: var(--series-1); }
+.end-dot, .hover-dot { fill: var(--series-1); stroke: var(--surface-1); stroke-width: 2; }
+.end-label { font-size: 12px; fill: var(--text-primary); font-variant-numeric: tabular-nums; }
+.crosshair { stroke: var(--text-muted); stroke-width: 1; visibility: hidden; }
+.hover-dot { visibility: hidden; }
+.crosshair.on, .hover-dot.on { visibility: visible; }
+.tooltip { position: absolute; top: 0; pointer-events: none; visibility: hidden;
+           background: var(--surface-1); border: 1px solid var(--border); border-radius: 6px;
+           padding: 4px 8px; font-size: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+           transform: translateX(-50%); white-space: nowrap; }
+.tooltip.on { visibility: visible; }
+.tip-value { display: block; font-weight: 600; color: var(--text-primary);
+             font-variant-numeric: tabular-nums; }
+.tip-label { display: block; color: var(--text-secondary); }
+
+/* tables */
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px;
+         border-bottom: 1px solid var(--grid); }
+th { font-size: 12px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+details { margin: 6px 0 0; }
+details > summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; }
+#samples { margin: 0 0 16px; }
+#samples .table-scroll { max-height: 320px; overflow-y: auto; }
+pre.log { font-size: 12px; background: var(--page); border: 1px solid var(--border);
+          border-radius: 6px; padding: 8px; overflow-x: auto; white-space: pre-wrap;
+          overflow-wrap: anywhere; margin: 6px 0 0; max-height: 280px; }
+ul.plain { margin: 0; padding-left: 18px; }
+.open-incident { border-color: var(--status-critical); border-left-width: 4px; }
+footer { font-size: 12px; margin-top: 8px; }
+
+@media (forced-colors: active) {
+  .badge { border: 1px solid CanvasText; }
+  .line { stroke: CanvasText; }
+}

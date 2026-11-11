@@ -1,0 +1,45 @@
+# Managed by linux-self-healing-lab (installer/lab_install.py). Do not edit by hand.
+[Unit]
+Description=Linux Self-Healing Lab - demo service
+After=network.target
+# Crash-loop protection: if the service fails more than 5 times within
+# 60 seconds, systemd stops restarting it and marks it "failed".
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/self-healing-lab/app/demo_service.py
+Environment=PYTHONUNBUFFERED=1
+# Copy of the log for the monitor (so the monitor needs no journal access).
+Environment=DEMO_LOG_FILE=/var/log/self-healing-lab/demo.log
+
+# --- Self-healing ---
+# Restart when the process exits non-zero, is killed by a signal
+# (e.g. SIGKILL), or times out. A clean `systemctl stop` is NOT restarted.
+Restart=on-failure
+RestartSec=2
+
+# --- Safety: this runs on a personal laptop ---
+# Dedicated unprivileged account, created and tracked by the installer.
+User=shlab-demo
+Group=shlab-demo
+# New files: owner rw, group r, others nothing. The log directory is
+# setgid group shlab-mon, so the monitor (and only it) can read the log.
+UMask=0027
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+# The only writable path for this service.
+ReadWritePaths=/var/log/self-healing-lab
+# Resource caps (cgroups): a runaway experiment can't freeze the machine.
+MemoryMax=128M
+CPUQuota=50%
+# Make sure the cgroup counters the monitor reads (MemoryCurrent,
+# CPUUsageNSec) are always populated.
+MemoryAccounting=yes
+CPUAccounting=yes
+
+[Install]
+WantedBy=multi-user.target
