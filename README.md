@@ -146,7 +146,7 @@ Requirements: Linux with systemd, Python 3, `sudo`, free ports 8080 and 8081 on 
 Details and safety notes: [docs/INSTALL.md](docs/INSTALL.md).
 
 ```bash
-git clone <this repository> linux-self-healing-lab && cd linux-self-healing-lab
+git clone https://github.com/shammahalsereidi/linux-self-healing-lab.git linux-self-healing-lab && cd linux-self-healing-lab
 python3 -m unittest discover -s tests       # no systemd or root needed
 sudo ./install.sh --dry-run                  # shows every change, makes none
 sudo ./install.sh
@@ -220,7 +220,7 @@ The tests use fake systemd, process and network layers, so they run without root
 changing the system. They cover the monitor's classification and timing rules, the
 installer's collision and uninstall rules, the dashboard's binding, request checks and escaping,
 and the experiment script's safety rules (targeting, crash-loop spacing, hang resume
-verification). On the laptop, the suite passed at commit `8b3abf7` (134 tests, before runs 6-7).
+verification). On the laptop, the suite passed during development (134 tests, before runs 6-7).
 It has grown since; run it yourself for the current count.
 
 ## How it was built
